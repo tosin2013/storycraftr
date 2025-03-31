@@ -9,106 +9,73 @@ from storycraftr.agent.agents import (
 )
 from rich.console import Console
 from rich.progress import Progress
+from typing import Optional
 
 console = Console()
 
 
-def save_to_markdown(
-    book_path, file_name, header, content, progress: Progress = None, task=None
-) -> str:
+def save_to_markdown(file_path: str, content: str, create_backup: bool = True) -> None:
     """
-    Save the generated content to a specified markdown file, creating a backup if the file exists.
-
+    Save content to a markdown file with optional backup.
+    
     Args:
-        book_path (str): The path to the book's directory.
-        file_name (str): The name of the markdown file to save.
-        header (str): The header to add at the beginning of the content.
-        content (str): The content to save in the file.
-        progress (Progress, optional): Rich Progress object for updating progress.
-        task (optional): Task associated with progress for updates.
-
-    Returns:
-        str: The path to the saved markdown file.
+        file_path: Path to the markdown file
+        content: Content to write to the file
+        create_backup: Whether to create a backup of existing file
     """
-    file_path = Path(book_path) / file_name
-    backup_path = file_path.with_suffix(file_path.suffix + ".back")
-
-    # Create a backup if the file exists
-    if file_path.exists():
-        if progress and task:
-            progress.update(task, description=f"Backing up {file_name}")
-        else:
-            console.print(
-                f"[bold yellow]Backing up {file_path} to {backup_path}...[/bold yellow]"
-            )
-        shutil.copyfile(file_path, backup_path)
-
-    # Save the new content to the markdown file
-    if progress and task:
-        progress.update(task, description=f"Saving content to {file_name}")
-    else:
-        console.print(f"[bold blue]Saving content to {file_path}...[/bold blue]")
-
-    with file_path.open("w", encoding="utf-8") as f:
-        f.write(f"# {header}\n\n{content}")
-
-    if progress and task:
-        progress.update(task, description=f"Content saved successfully to {file_name}")
-    else:
-        console.print(
-            f"[bold green]Content saved successfully to {file_path}[/bold green]"
-        )
-
-    return str(file_path)
+    file_path = Path(file_path)
+    
+    # Create backup if requested and file exists
+    if create_backup and file_path.exists():
+        backup_path = file_path.with_suffix(file_path.suffix + '.bak')
+        shutil.copy2(file_path, backup_path)
+    
+    # Create parent directories if they don't exist
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Write content
+    file_path.write_text(content, encoding='utf-8')
 
 
-def append_to_markdown(book_path, folder_name, file_name, content):
+def append_to_markdown(file_path: str, content: str) -> None:
     """
-    Append content to an existing markdown file.
-
+    Append content to a markdown file.
+    
     Args:
-        book_path (str): The path to the book's directory.
-        folder_name (str): The folder where the file is located.
-        file_name (str): The name of the markdown file to append to.
-        content (str): The content to append.
-
+        file_path: Path to the markdown file
+        content: Content to append
+    
     Raises:
-        FileNotFoundError: If the file does not exist.
+        FileNotFoundError: If the file doesn't exist
     """
-    file_path = Path(book_path) / folder_name / file_name
+    file_path = Path(file_path)
+    
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+    
+    with open(file_path, 'a', encoding='utf-8') as f:
+        f.write(content + "\n")
 
-    if file_path.exists():
-        with file_path.open("a", encoding="utf-8") as f:
-            f.write(f"\n\n{content}")
-        console.print(f"Appended content to {file_path}")
-    else:
-        raise FileNotFoundError(f"File {file_path} does not exist.")
 
-
-def read_from_markdown(book_path, folder_name, file_name) -> str:
+def read_from_markdown(file_path: str) -> str:
     """
-    Read content from the specified markdown file.
-
+    Read content from a markdown file.
+    
     Args:
-        book_path (str): The path to the book's directory.
-        folder_name (str): The folder where the file is located.
-        file_name (str): The name of the markdown file to read from.
-
+        file_path: Path to the markdown file
+    
     Returns:
-        str: The content of the markdown file.
-
+        str: Content of the file
+    
     Raises:
-        FileNotFoundError: If the file does not exist.
+        FileNotFoundError: If the file doesn't exist
     """
-    file_path = Path(book_path) / folder_name / file_name
-
-    if file_path.exists():
-        with file_path.open("r", encoding="utf-8") as f:
-            content = f.read()
-        console.print(f"Read content from {file_path}")
-        return content
-    else:
-        raise FileNotFoundError(f"File {file_path} does not exist.")
+    file_path = Path(file_path)
+    
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+    
+    return file_path.read_text(encoding='utf-8')
 
 
 def consolidate_book_md(

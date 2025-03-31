@@ -11,8 +11,12 @@ from storycraftr.cli import (
     verify_book_path,
     is_initialized,
     project_not_initialized_error,
-    init_structure,
+    init_structure_story,
+    init_structure_paper,
+    cli,
 )
+from click.testing import CliRunner
+import click
 
 
 # Mock the console object to avoid printing to the console during tests
@@ -56,25 +60,29 @@ def test_download_file_failure(mock_get, mock_console):
 
 
 # Test verify_book_path function
-@mock.patch("pathlib.Path.exists", return_value=True)
-def test_verify_book_path_success(mock_console):  # Se agrega el parámetro mock_console
+@mock.patch("os.path.exists")
+def test_verify_book_path_success(mock_exists, mock_console):
+    mock_exists.return_value = True
     assert verify_book_path("test_path") == "test_path"
 
 
-@mock.patch("pathlib.Path.exists", return_value=False)
-def test_verify_book_path_failure(mock_console):  # Se agrega el parámetro mock_console
+@mock.patch("os.path.exists")
+def test_verify_book_path_failure(mock_exists, mock_console):
+    mock_exists.return_value = False
     with pytest.raises(ClickException):
         verify_book_path("invalid_path")
 
 
 # Test is_initialized function
-@mock.patch("pathlib.Path.exists", return_value=True)
-def test_is_initialized_true(mock_console):  # Se agrega el parámetro mock_console
+@mock.patch("os.path.exists")
+def test_is_initialized_true(mock_exists, mock_console):
+    mock_exists.return_value = True
     assert is_initialized("test_path")
 
 
-@mock.patch("pathlib.Path.exists", return_value=False)
-def test_is_initialized_false(mock_console):  # Se agrega el parámetro mock_console
+@mock.patch("os.path.exists")
+def test_is_initialized_false(mock_exists, mock_console):
+    mock_exists.return_value = False
     assert not is_initialized("test_path")
 
 
@@ -85,3 +93,83 @@ def test_project_not_initialized_error(mock_console):
     mock_console.print.assert_called_with(
         "[red]✖ Project 'test_path' is not initialized. Run 'storycraftr init {book_path}' first.[/red]"
     )
+
+
+def test_cli_init():
+    """Test the init command."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create a behavior file
+        with open("behavior.txt", "w") as f:
+            f.write("Test behavior")
+        
+        result = runner.invoke(cli, ['init', 'test_project', '--behavior', 'behavior.txt'])
+        assert result.exit_code == 0
+
+
+def test_cli_chat():
+    """Test the chat command."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create necessary files for chat
+        os.makedirs("test_project")
+        with open("test_project/storycraftr.json", "w") as f:
+            f.write('{"name": "test_project"}')
+        
+        result = runner.invoke(cli, ['chat'])
+        assert result.exit_code == 0
+
+
+def test_story_commands():
+    """Test story-related commands."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create necessary files for story commands
+        os.makedirs("test_project")
+        with open("test_project/storycraftr.json", "w") as f:
+            f.write('{"name": "test_project", "type": "story"}')
+        
+        # Create behavior file
+        with open("behavior.txt", "w") as f:
+            f.write("Test behavior")
+        
+        # Initialize project first
+        result = runner.invoke(cli, ['init', 'test_project', '--behavior', 'behavior.txt'])
+        assert result.exit_code == 0
+        
+        # Change to project directory
+        os.chdir("test_project")
+        
+        # Test story outline with prompt
+        result = runner.invoke(cli, ['story', 'outline', '--help'])
+        assert result.exit_code == 0
+
+
+def test_paper_commands():
+    """Test paper-related commands."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create necessary files for paper commands
+        os.makedirs("test_project")
+        with open("test_project/storycraftr.json", "w") as f:
+            f.write('{"name": "test_project", "type": "paper"}')
+        
+        # Create behavior file
+        with open("behavior.txt", "w") as f:
+            f.write("Test behavior")
+        
+        # Initialize project first
+        result = runner.invoke(cli, ['init', 'test_project', '--behavior', 'behavior.txt'])
+        assert result.exit_code == 0
+        
+        # Change to project directory
+        os.chdir("test_project")
+        
+        # Create a test-specific CLI instance with paper commands
+        from storycraftr.cmd.paper import paper
+        test_cli = click.Group()
+        test_cli.add_command(paper)
+        
+        # Test paper define with prompt
+        result = runner.invoke(test_cli, ['paper', 'define', '--help'])
+        assert result.exit_code == 0

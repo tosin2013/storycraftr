@@ -1,7 +1,8 @@
+import os
 import click
 from rich.console import Console
 from pathlib import Path
-
+from storycraftr.utils.core import load_book_config
 from storycraftr.agent.paper.define import define_core_question, define_contribution
 
 console = Console()
@@ -40,7 +41,7 @@ def core_question(question: str, book_path: str = None):
     define_core_question(book_path, question)
 
 
-@click.command()
+@define.command()
 @click.option(
     "--book-path", type=click.Path(), help="Path to the book directory", required=False
 )

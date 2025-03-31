@@ -11,6 +11,91 @@ from pathlib import Path
 
 console = Console()
 
+MODEL_CONFIG = {
+    'openai': {
+        'default_model': 'gpt-3.5-turbo-0125',
+        'available_models': [
+            'gpt-3.5-turbo-0125',
+            'gpt-4-0125-preview',
+            'gpt-4-turbo-preview',
+            'gpt-4.5-preview'
+        ],
+        'api_base': 'https://api.openai.com/v1/'
+    },
+    'azure': {
+        'default_model': 'gpt-3.5-turbo-0125',
+        'available_models': [
+            'gpt-3.5-turbo-0125',
+            'gpt-4-0125-preview',
+            'gpt-4-turbo-preview',
+            'gpt-4.5-preview'
+        ],
+        'api_base': None  # Set during runtime based on Azure configuration
+    },
+    'deepseek': {
+        'default_model': 'DeepSeek-V3-0324',
+        'available_models': [
+            'DeepSeek-V3-0324',
+            'DeepSeek-R1-Distill-Qwen-32B'
+        ],
+        'api_base': 'https://api.deepseek.com/v1/'
+    },
+    'qwen': {
+        'default_model': 'Qwen2.5-Omni-7B',
+        'available_models': [
+            'Qwen2.5-Omni-7B',
+            'Qwen2.5-Coder-32B-Instruct',
+            'Qwen2.5-14B-DeepSeek-R1-1M'
+        ],
+        'api_base': 'https://dashscope.aliyuncs.com/'
+    },
+    'gemini': {
+        'default_model': 'Gemini-2.5-Pro-Experimental',
+        'available_models': [
+            'Gemini-2.5-Pro-Experimental',
+            'Gemini-2.5'
+        ],
+        'api_base': 'https://api.gemini.google.com/v1/'
+    },
+    'together': {
+        'default_model': 'together-gpt-neoxt-chat-20b',
+        'available_models': ['together-gpt-neoxt-chat-20b'],
+        'api_base': 'https://api.together.ai/v1/'
+    },
+    'deepinfra': {
+        'default_model': 'Qwen2.5-Coder-32B-Instruct',
+        'available_models': ['Qwen2.5-Coder-32B-Instruct'],
+        'api_base': 'https://api.deepinfra.com/v1/'
+    }
+}
+
+def get_model_config(provider='openai', model=None):
+    """
+    Get the configuration for a specific model provider and model.
+    
+    Args:
+        provider (str): The model provider (e.g., 'openai', 'azure', 'deepseek')
+        model (str, optional): Specific model to use. If None, uses provider's default
+        
+    Returns:
+        dict: Model configuration including API base URL and model details
+        
+    Raises:
+        ValueError: If provider or model is not supported
+    """
+    if provider not in MODEL_CONFIG:
+        raise ValueError(f"Unsupported provider: {provider}")
+        
+    config = MODEL_CONFIG[provider].copy()
+    
+    if model:
+        if model not in config['available_models']:
+            raise ValueError(f"Model {model} not supported by provider {provider}")
+        config['model'] = model
+    else:
+        config['model'] = config['default_model']
+        
+    return config
 
 def generate_prompt_with_hash(original_prompt: str, date: str, book_path: str) -> str:
     """

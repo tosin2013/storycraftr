@@ -39,7 +39,7 @@ def generate_geography(book_path: str, prompt: str) -> str:
     console.print("[bold blue]Generating geography...[/bold blue]")
     language = load_book_config(book_path).primary_language
     assistant = create_or_get_assistant(book_path)
-    thread = get_thread()
+    thread = get_thread(book_path)
 
     file_path = Path(book_path) / "worldbuilding" / "geography.md"
 
@@ -64,9 +64,7 @@ def generate_geography(book_path: str, prompt: str) -> str:
     )
 
     # Save content and update agent files
-    save_to_markdown(
-        book_path, "worldbuilding/geography.md", "Geography", geography_content
-    )
+    save_to_markdown(str(file_path), geography_content)
     console.print("[bold green]✔ Geography generated successfully[/bold green]")
     update_agent_files(book_path, assistant)
 
@@ -87,7 +85,7 @@ def generate_history(book_path: str, prompt: str) -> str:
     console.print("[bold blue]Generating history...[/bold blue]")
     language = load_book_config(book_path).primary_language
     assistant = create_or_get_assistant(book_path)
-    thread = get_thread()
+    thread = get_thread(book_path)
 
     file_path = Path(book_path) / "worldbuilding" / "history.md"
 
@@ -112,7 +110,7 @@ def generate_history(book_path: str, prompt: str) -> str:
     )
 
     # Save content and update agent files
-    save_to_markdown(book_path, "worldbuilding/history.md", "History", history_content)
+    save_to_markdown(str(file_path), history_content)
     console.print("[bold green]✔ History generated successfully[/bold green]")
     update_agent_files(book_path, assistant)
 
@@ -133,7 +131,7 @@ def generate_culture(book_path: str, prompt: str) -> str:
     console.print("[bold blue]Generating culture...[/bold blue]")
     language = load_book_config(book_path).primary_language
     assistant = create_or_get_assistant(book_path)
-    thread = get_thread()
+    thread = get_thread(book_path)
 
     file_path = Path(book_path) / "worldbuilding" / "culture.md"
 
@@ -158,7 +156,7 @@ def generate_culture(book_path: str, prompt: str) -> str:
     )
 
     # Save content and update agent files
-    save_to_markdown(book_path, "worldbuilding/culture.md", "Culture", culture_content)
+    save_to_markdown(str(file_path), culture_content)
     console.print("[bold green]✔ Culture generated successfully[/bold green]")
     update_agent_files(book_path, assistant)
 
@@ -179,7 +177,7 @@ def generate_magic_system(book_path: str, prompt: str) -> str:
     console.print("[bold blue]Generating magic/science system...[/bold blue]")
     language = load_book_config(book_path).primary_language
     assistant = create_or_get_assistant(book_path)
-    thread = get_thread()
+    thread = get_thread(book_path)
 
     file_path = Path(book_path) / "worldbuilding" / "magic_system.md"
 
@@ -204,12 +202,7 @@ def generate_magic_system(book_path: str, prompt: str) -> str:
     )
 
     # Save content and update agent files
-    save_to_markdown(
-        book_path,
-        "worldbuilding/magic_system.md",
-        "Magic/Science System",
-        magic_system_content,
-    )
+    save_to_markdown(str(file_path), magic_system_content)
     console.print(
         "[bold green]✔ Magic/Science system generated successfully[/bold green]"
     )
@@ -232,7 +225,7 @@ def generate_technology(book_path: str, prompt: str) -> str:
     console.print("[bold blue]Generating technology...[/bold blue]")
     language = load_book_config(book_path).primary_language
     assistant = create_or_get_assistant(book_path)
-    thread = get_thread()
+    thread = get_thread(book_path)
 
     file_path = Path(book_path) / "worldbuilding" / "technology.md"
 
@@ -257,9 +250,7 @@ def generate_technology(book_path: str, prompt: str) -> str:
     )
 
     # Save content and update agent files
-    save_to_markdown(
-        book_path, "worldbuilding/technology.md", "Technology", technology_content
-    )
+    save_to_markdown(str(file_path), technology_content)
     console.print("[bold green]✔ Technology generated successfully[/bold green]")
     update_agent_files(book_path, assistant)
 

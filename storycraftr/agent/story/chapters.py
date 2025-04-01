@@ -36,7 +36,7 @@ def generate_chapter(book_path: str, chapter_number: int, prompt: str) -> str:
     console.print(f"[bold blue]Generating chapter {chapter_number}...[/bold blue]")
 
     assistant = create_or_get_assistant(book_path)
-    thread = get_thread()
+    thread = get_thread(book_path)
 
     chapter_file = f"chapter-{chapter_number}.md"
     file_path = Path(book_path) / "chapters" / chapter_file
@@ -64,12 +64,7 @@ def generate_chapter(book_path: str, chapter_number: int, prompt: str) -> str:
     )
 
     # Save the generated chapter to markdown
-    save_to_markdown(
-        book_path,
-        f"chapters/{chapter_file}",
-        f"Chapter {chapter_number}",
-        chapter_content,
-    )
+    save_to_markdown(str(file_path), chapter_content)
     console.print(
         f"[bold green]✔ Chapter {chapter_number} generated successfully[/bold green]"
     )
@@ -95,7 +90,7 @@ def generate_cover(book_path: str, prompt: str) -> str:
 
     config = load_book_config(book_path)
     assistant = create_or_get_assistant(book_path)
-    thread = get_thread()
+    thread = get_thread(book_path)
 
     prompt_content = COVER_PROMPT.format(
         title=config.book_name,
@@ -110,7 +105,7 @@ def generate_cover(book_path: str, prompt: str) -> str:
         book_path, thread_id=thread.id, content=prompt_content, assistant=assistant
     )
 
-    save_to_markdown(book_path, "chapters/cover.md", "Cover", cover_content)
+    save_to_markdown(str(Path(book_path) / "chapters" / "cover.md"), cover_content)
     console.print("[bold green]✔ Cover generated successfully[/bold green]")
 
     update_agent_files(book_path, assistant)
@@ -132,7 +127,7 @@ def generate_back_cover(book_path: str, prompt: str) -> str:
 
     config = load_book_config(book_path)
     assistant = create_or_get_assistant(book_path)
-    thread = get_thread()
+    thread = get_thread(book_path)
 
     prompt_content = BACK_COVER_PROMPT.format(
         title=config.book_name,
@@ -148,9 +143,7 @@ def generate_back_cover(book_path: str, prompt: str) -> str:
         book_path, thread_id=thread.id, content=prompt_content, assistant=assistant
     )
 
-    save_to_markdown(
-        book_path, "chapters/back-cover.md", "Back Cover", back_cover_content
-    )
+    save_to_markdown(str(Path(book_path) / "chapters" / "back-cover.md"), back_cover_content)
     console.print("[bold green]✔ Back cover generated successfully[/bold green]")
 
     update_agent_files(book_path, assistant)
@@ -171,7 +164,7 @@ def generate_epilogue(book_path: str, prompt: str) -> str:
     console.print("[bold blue]Generating epilogue...[/bold blue]")
 
     assistant = create_or_get_assistant(book_path)
-    thread = get_thread()
+    thread = get_thread(book_path)
 
     file_path = Path(book_path) / "chapters" / "epilogue.md"
 
@@ -197,7 +190,7 @@ def generate_epilogue(book_path: str, prompt: str) -> str:
         file_path=str(file_path),
     )
 
-    save_to_markdown(book_path, "chapters/epilogue.md", "Epilogue", epilogue_content)
+    save_to_markdown(str(file_path), epilogue_content)
     console.print("[bold green]✔ Epilogue generated successfully[/bold green]")
 
     update_agent_files(book_path, assistant)

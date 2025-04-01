@@ -44,7 +44,7 @@ def chat(book_path=None):
 
     # Create or get the assistant and thread
     assistant = create_or_get_assistant(book_path)
-    thread = get_thread()
+    thread = get_thread(book_path)
 
     session = PromptSession(history=InMemoryHistory())
 
@@ -136,39 +136,31 @@ def execute_cli_command(user_input):
 
 
 def display_help():
-    """
-    Function to display help with available modules and commands.
-    """
-    help_text = """
-# Available Commands
+    """Display help information about available commands."""
+    help_text = """# StoryCraftr Chat Commands 🚀
 
-Type commands prefixed with `!` followed by the module and the command name. 
-Here are the available modules and some example commands:
+## Available Commands
 
-### Modules
+### Story Development
+- **iterate**: Commands for iterative improvements.
+    - Example: `!iterate refine "Improve the pacing in chapter 3."`
+    - Example: `!iterate insert-chapter 2 "Add a new chapter here."`
+    - Example: `!iterate split-chapter 4 "Split this chapter into two."`
 
-- **iterate**: Commands related to refining the story iteratively.
-    - Example: `!iterate check-names "Check character names for consistency."`
-    - Example: `!iterate refine-motivation "Refine character motivation for Zevid."`
-    - Example: `!iterate check-consistency "Ensure consistency of character arcs and motivations."`
-    - Example: `!iterate insert-chapter 3 "Insert a chapter about Zevid's backstory between chapters 2 and 3."`
-    
-- **outline**: Commands related to outlining the book.
+- **outline**: Commands for story outlining.
     - Example: `!outline general-outline "Summarize the overall plot of a dystopian sci-fi novel."`
     - Example: `!outline plot-points "Identify key plot points in the story."`
-    - Example: `!outline character-summary "Summarize Zevid’s character."`
+    - Example: `!outline character-summary "Summarize character profiles."`
     - Example: `!outline chapter-synopsis "Outline each chapter of a dystopian society."`
 
-- **worldbuilding**: Commands for building the world.
-    - Example: `!worldbuilding history "Describe the history of a dystopian world."`
-    - Example: `!worldbuilding geography "Describe the geography of a dystopian society."`
-    - Example: `!worldbuilding culture "Describe the culture of a society controlled by an elite class."`
-    - Example: `!worldbuilding technology "Describe the advanced biotechnology mistaken for magic."`
-    - Example: `!worldbuilding magic-system "Describe the 'magic' system based on advanced technology."`
+- **worldbuilding**: Commands for developing the story world.
+    - Example: `!worldbuilding environment "Describe the post-apocalyptic setting."`
+    - Example: `!worldbuilding history "Detail the events leading to the current state."`
+    - Example: `!worldbuilding culture "Explain how society functions now."`
 
 - **chapters**: Commands for working with specific chapters.
     - Example: `!chapters chapter 1 "Write chapter 1 based on the synopsis provided."`
-    - Example: `!chapters insert-chapter 5 "Insert a chapter revealing Zevid’s manipulation."`
+    - Example: `!chapters insert-chapter 5 "Insert a new chapter here."`
     - Example: `!chapters cover "Generate the cover text for the novel."`
     - Example: `!chapters back-cover "Generate the back-cover text for the novel."`
 

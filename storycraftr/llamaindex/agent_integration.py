@@ -101,11 +101,25 @@ Please answer using ONLY information from the provided context, and make sure to
 For fiction writing, maintain the style and tone of the story. For non-fiction, provide accurate references to the source material.
 """
         
-        # Use direct query for now - in a real implementation, this would call the agent
-        # This can be replaced with actual agent call once available
-        response = query_index(book_path, agent_prompt, similarity_top_k=1)
+        # Get the configured LLM instead of querying the index again
+        from llama_index.core import Settings
         
-        return response
+        # Configure LlamaIndex settings if needed
+        from storycraftr.llamaindex.core import configure_llama_index
+        configure_llama_index(book_path)
+        
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[bold blue]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task("[bold blue]Generating response from context...", total=None)
+            
+            # Use the LLM directly with our context-enhanced prompt
+            response = Settings.llm.complete(agent_prompt)
+            progress.update(task, completed=True)
+        
+        return str(response)
 
     except Exception as e:
         console.print(f"[red]Error in enhanced agent query: {e}[/red]")
@@ -162,7 +176,7 @@ def add_document_to_agent_context(
             thread_id=thread_id,
             content=formatted_context,
             assistant=assistant,
-            role="user"
+            role="system"
         )
         
         return True

@@ -1,19 +1,16 @@
 """
 Integration of LlamaIndex with the chat interface.
 """
-import re
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List
 
 from rich.console import Console
-from rich.panel import Panel
 from rich.markdown import Markdown
 
 from storycraftr.llamaindex.core import (
     build_index,
     query_index,
     get_relevant_context,
-    build_index_with_knowledge,
-    load_knowledge_source
+    build_index_with_knowledge
 )
 from storycraftr.llamaindex.agent_integration import (
     enhanced_agent_query,
@@ -140,16 +137,16 @@ def query_index_chat(args: List[str], book_path: str, thread_id: str, **kwargs) 
     
     console.print(f"[bold blue]Querying index for: [/bold blue]{query}")
     
-    # Get response from enhanced agent query
+    # Add the context to the thread first for better agent grounding
+    add_document_to_agent_context(book_path, thread_id, query)
+    
+    # Get response from enhanced agent query with the context already in the thread
     response = enhanced_agent_query(
         book_path=book_path,
         query=query,
         context_limit=5,
         use_agent=True
     )
-    
-    # Add the context to the thread for agent awareness
-    add_document_to_agent_context(book_path, thread_id, query)
     
     return response
 

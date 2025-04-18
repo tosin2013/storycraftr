@@ -164,3 +164,23 @@ This integration uses:
 - **llama-index-embeddings-openai**: For embedding generation
 - **llama-index-readers-file**: For file loading and processing
 - **llama-index-readers-web**: For potential web content integration 
+
+## Advanced Knowledge Integration
+
+### Knowledge-Enhanced Storytelling
+
+For more advanced use cases, LlamaIndex supports integrating external knowledge sources with your book content:
+
+```bash
+storycraftr llamaindex build-knowledge-index --book-path /path/to/your/book --knowledge /path/to/research.md --knowledge-type research
+```
+
+### Agent-Based Knowledge Queries
+
+You can leverage AI agents to synthesize information from both your book and external knowledge:
+
+```bash
+storycraftr llamaindex agent-knowledge-query /path/to/your/book "How does my research on ancient civilizations connect to my protagonist's journey?" --knowledge /path/to/research --type text
+```
+
+This creates a more holistic storytelling experience by connecting your narrative with deeper research and worldbuilding materials. 

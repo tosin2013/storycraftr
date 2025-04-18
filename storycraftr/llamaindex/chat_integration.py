@@ -40,7 +40,8 @@ def register_chat_commands(chat_commands: Dict[str, Any]) -> Dict[str, Any]:
         "query": query_index_chat,
         "context": context_chat,
         "help": llamaindex_help,
-        "knowledge": handle_knowledge_command
+        "knowledge": handle_knowledge_command,
+        "direct": direct_llamaindex_command
     }
     
     return chat_commands
@@ -186,7 +187,7 @@ def context_chat(args: List[str], book_path: str, thread_id: str, **kwargs) -> s
     return result
 
 
-def handle_knowledge_command(args: List[str], book_path: str, chat_state: Dict[str, Any]) -> str:
+def handle_knowledge_command(args: List[str], book_path: str, thread_id: str, **kwargs) -> str:
     """
     Handle the !llamaindex knowledge command from the chat interface.
     
@@ -200,13 +201,17 @@ def handle_knowledge_command(args: List[str], book_path: str, chat_state: Dict[s
     Args:
         args (List[str]): Command arguments.
         book_path (str): Path to the book.
-        chat_state (Dict[str, Any]): Chat state dictionary.
+        thread_id (str): ID of the current thread.
+        **kwargs: Additional keyword arguments.
     
     Returns:
         str: Response message.
     """
     if len(args) < 1:
         return "⚠️ Missing subcommand. Use: add, list, query, or build"
+    
+    # Get chat state from kwargs or initialize a new one
+    chat_state = kwargs.get("chat_state", {})
     
     # Initialize knowledge sources in chat state if not present
     if "knowledge_sources" not in chat_state:
@@ -298,14 +303,15 @@ def handle_knowledge_command(args: List[str], book_path: str, chat_state: Dict[s
         return f"⚠️ Unknown subcommand: {subcommand}. Use: add, list, query, or build"
 
 
-def handle_llamaindex_command(command: str, book_path: str, chat_state: Dict[str, Any]) -> str:
+def handle_llamaindex_command(command: str, book_path: str, thread_id: str, **kwargs) -> str:
     """
     Handle LlamaIndex commands from the chat interface.
     
     Args:
         command (str): The command string (without the !llamaindex prefix).
         book_path (str): Path to the book.
-        chat_state (Dict[str, Any]): Chat state dictionary.
+        thread_id (str): ID of the current thread.
+        **kwargs: Additional keyword arguments.
         
     Returns:
         str: Response message.
@@ -320,21 +326,24 @@ def handle_llamaindex_command(command: str, book_path: str, chat_state: Dict[str
     cmd = parts[0].lower()
     args = parts[1:]
     
+    # Get chat state from kwargs or initialize a new one
+    chat_state = kwargs.get("chat_state", {})
+    
     # Handle commands
     if cmd == "build" or cmd == "build-index":
-        return handle_build_command(args, book_path)
+        return build_index_chat(args, book_path=book_path, thread_id=thread_id)
     
     elif cmd == "query":
-        return handle_query_command(args, book_path)
+        return query_index_chat(args, book_path=book_path, thread_id=thread_id)
     
     elif cmd == "context":
-        return handle_context_command(args, book_path)
+        return context_chat(args, book_path=book_path, thread_id=thread_id)
     
     elif cmd == "knowledge":
-        return handle_knowledge_command(args, book_path, chat_state)
+        return handle_knowledge_command(args, book_path=book_path, thread_id=thread_id, chat_state=chat_state)
     
     elif cmd == "help":
-        return show_llamaindex_help()
+        return llamaindex_help([], book_path=book_path, thread_id=thread_id)
     
     else:
         return f"Unknown LlamaIndex command: {cmd}. Type '!llamaindex help' for available commands."
@@ -354,4 +363,27 @@ def show_llamaindex_help() -> str:
 - **!llamaindex knowledge query <query>** - Query with knowledge-enhanced index
 - **!llamaindex help** - Show this help message
 """
-    return help_text 
+    return help_text
+
+
+def direct_llamaindex_command(args: List[str], book_path: str, thread_id: str, **kwargs) -> str:
+    """
+    Direct handling of LlamaIndex commands with arguments in a raw list.
+    
+    This is a convenience wrapper around handle_llamaindex_command for better integration
+    with the chat command system.
+    
+    Args:
+        args (List[str]): Command arguments.
+        book_path (str): Path to the book directory.
+        thread_id (str): ID of the current thread.
+        **kwargs: Additional keyword arguments.
+        
+    Returns:
+        str: Command result.
+    """
+    if not args:
+        return llamaindex_help([], book_path=book_path, thread_id=thread_id)
+    
+    command = " ".join(args)
+    return handle_llamaindex_command(command, book_path, thread_id, **kwargs) 

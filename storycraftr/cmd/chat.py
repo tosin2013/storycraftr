@@ -14,6 +14,9 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 from pathlib import Path
 
+# Import LlamaIndex chat integration
+from storycraftr.llamaindex.chat_integration import register_chat_commands
+
 console = Console()
 
 # Dictionary of available command modules
@@ -23,6 +26,12 @@ command_modules = {
     "worldbuilding": story_cmd.worldbuilding,
     "chapters": story_cmd.chapters,
 }
+
+# Dictionary of custom chat commands
+chat_commands = {}
+
+# Register LlamaIndex chat commands
+chat_commands = register_chat_commands(chat_commands)
 
 
 @click.command()
@@ -65,6 +74,11 @@ def chat(book_path=None):
                 continue
 
             if user_input.startswith("!"):
+                # Handle custom chat commands first
+                if user_input.startswith("!llamaindex"):
+                    execute_chat_command(user_input[1:], book_path, thread.id)
+                    continue
+                # Fall back to CLI command execution
                 execute_cli_command(user_input[1:])
                 continue
 
@@ -136,6 +150,49 @@ def execute_cli_command(user_input):
         console.print(f"[bold red]Error executing command: {str(e)}[/bold red]")
 
 
+def execute_chat_command(user_input, book_path, thread_id):
+    """
+    Execute custom chat commands like LlamaIndex commands.
+    
+    Args:
+        user_input (str): The user input starting with the command name.
+        book_path (str): Path to the book directory.
+        thread_id (str): The ID of the current thread.
+    """
+    try:
+        parts = shlex.split(user_input)
+        module_name = parts[0]
+        
+        if module_name in chat_commands:
+            if len(parts) < 2:
+                # Default to 'help' if no subcommand provided
+                subcommand = "help"
+                args = []
+            else:
+                subcommand = parts[1]
+                args = parts[2:]
+                
+            if subcommand in chat_commands[module_name]:
+                cmd_func = chat_commands[module_name][subcommand]
+                
+                if callable(cmd_func):
+                    result = cmd_func(args, book_path=book_path, thread_id=thread_id)
+                    
+                    if result:
+                        # Display the result as markdown
+                        markdown_response = Markdown(result)
+                        console.print(markdown_response)
+                else:
+                    console.print(f"[bold red]'{subcommand}' is not a valid command[/bold red]")
+            else:
+                console.print(f"[bold red]Subcommand '{subcommand}' not found in {module_name}[/bold red]")
+        else:
+            # If not a chat command, let the regular CLI command handler deal with it
+            execute_cli_command(user_input)
+    except Exception as e:
+        console.print(f"[bold red]Error executing command: {str(e)}[/bold red]")
+
+
 def display_help():
     """
     Function to display help with available modules and commands.
@@ -172,6 +229,12 @@ Here are the available modules and some example commands:
     - Example: `!chapters insert-chapter 5 "Insert a chapter revealing Zevid's manipulation."`
     - Example: `!chapters cover "Generate the cover text for the novel."`
     - Example: `!chapters back-cover "Generate the back-cover text for the novel."`
+
+- **llamaindex**: Commands for semantic search using LlamaIndex.
+    - Example: `!llamaindex build` - Build a semantic index from your book content.
+    - Example: `!llamaindex query "What are the main characters in my story?"` - Search your book content.
+    - Example: `!llamaindex context "Tell me about the protagonist's backstory"` - Get raw context.
+    - Example: `!llamaindex help` - See detailed help for LlamaIndex commands.
 
 ### Other
 - **help()**: Display this help message.

@@ -47,6 +47,9 @@ from storycraftr.cmd.chat import chat
 from storycraftr.agent.agents import create_or_get_assistant, update_agent_files
 from storycraftr.utils.core import load_book_config
 
+# Import LlamaIndex commands
+from storycraftr.llamaindex.cli import register_llamaindex_commands
+
 # Imports StoryCraftr in storycraftr.cmd.story
 from storycraftr.cmd.story.worldbuilding import worldbuilding as story_worldbuilding
 from storycraftr.cmd.story.outline import outline as story_outline
@@ -356,5 +359,9 @@ else:
     )
     sys.exit(1)
 
+# Register LlamaIndex commands
+register_llamaindex_commands(cli)
+
+# Main entry point
 if __name__ == "__main__":
     cli()

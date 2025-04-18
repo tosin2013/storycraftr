@@ -164,7 +164,6 @@ This integration uses:
 - **llama-index-embeddings-openai**: For embedding generation
 - **llama-index-readers-file**: For file loading and processing
 - **llama-index-readers-web**: For potential web content integration 
-
 ## Advanced Knowledge Integration
 
 ### Knowledge-Enhanced Storytelling

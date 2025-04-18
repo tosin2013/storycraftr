@@ -298,3 +298,11 @@ dist
 
 Deep Learning in Medical Imaging
 *._checkpoint
+
+# Rules Template files
+.cursor/rules/
+.clinerules/
+.roo/
+fix_symlinks.sh
+update_rule_contents.sh
+RULES_TEMPLATE_README.md

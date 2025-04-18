@@ -200,6 +200,49 @@ def execute_chat_command(user_input, book_path, thread_id):
         console.print(f"[bold red]Error executing command: {str(e)}[/bold red]")
 
 
+def execute_chat_command(user_input, book_path, thread_id):
+    """
+    Execute custom chat commands like LlamaIndex commands.
+    
+    Args:
+        user_input (str): The user input starting with the command name.
+        book_path (str): Path to the book directory.
+        thread_id (str): The ID of the current thread.
+    """
+    try:
+        parts = shlex.split(user_input)
+        module_name = parts[0]
+        
+        if module_name in chat_commands:
+            if len(parts) < 2:
+                # Default to 'help' if no subcommand provided
+                subcommand = "help"
+                args = []
+            else:
+                subcommand = parts[1]
+                args = parts[2:]
+                
+            if subcommand in chat_commands[module_name]:
+                cmd_func = chat_commands[module_name][subcommand]
+                
+                if callable(cmd_func):
+                    result = cmd_func(args, book_path=book_path, thread_id=thread_id)
+                    
+                    if result:
+                        # Display the result as markdown
+                        markdown_response = Markdown(result)
+                        console.print(markdown_response)
+                else:
+                    console.print(f"[bold red]'{subcommand}' is not a valid command[/bold red]")
+            else:
+                console.print(f"[bold red]Subcommand '{subcommand}' not found in {module_name}[/bold red]")
+        else:
+            # If not a chat command, let the regular CLI command handler deal with it
+            execute_cli_command(user_input)
+    except Exception as e:
+        console.print(f"[bold red]Error executing command: {str(e)}[/bold red]")
+
+
 def display_help():
     """
     Function to display help with available modules and commands.

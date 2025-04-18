@@ -5,7 +5,7 @@ import os
 import json
 import click
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 
 from rich.console import Console
 from rich.panel import Panel
@@ -21,7 +21,7 @@ from storycraftr.llamaindex.core import (
     load_knowledge_source,
     build_index_with_knowledge
 )
-from storycraftr.llamaindex.agent_integration import enhanced_agent_query
+from storycraftr.llamaindex.agent_integration import enhanced_agent_query, agent_knowledge_query
 from storycraftr.state import debug_state
 
 console = Console()
@@ -226,6 +226,94 @@ def build_knowledge_index_command(book_path: str, knowledge: tuple, knowledge_ty
             
     except Exception as e:
         console.print(f"[bold red]Error building enhanced knowledge index:[/bold red] {e}")
+
+
+@llamaindex.command("agent-knowledge-query")
+@click.argument("book_path", type=click.Path(exists=True))
+@click.argument("query")
+@click.option(
+    "--knowledge", 
+    "-k", 
+    multiple=True,
+    help="Paths to knowledge source files or directories"
+)
+@click.option(
+    "--type", 
+    "-t", 
+    multiple=True,
+    help="Types of knowledge sources (text, markdown, json, etc.)"
+)
+@click.option(
+    "--dir", 
+    "-d", 
+    multiple=True,
+    help="Specific book directories to include in the index"
+)
+@click.option(
+    "--context", 
+    "-c", 
+    default=5,
+    type=int,
+    help="Number of context items to include"
+)
+@click.option(
+    "--direct",
+    is_flag=True,
+    help="Return direct query results instead of using agent"
+)
+def agent_knowledge_query_command(book_path, query, knowledge, type, dir, context, direct):
+    """
+    Query your book and external knowledge sources using AI agents.
+    
+    This command creates a knowledge-enhanced query experience by combining your
+    book content with external knowledge sources.
+    
+    Example:
+        storycraftr llamaindex agent-knowledge-query ./mybook "What themes connect my story with Greek mythology?" -k ./research/greek_myths.md -t markdown
+    """
+    try:
+        # Verify the book path
+        from storycraftr.cli import verify_book_path
+        book_path_str = verify_book_path(book_path)
+        
+        # Prepare knowledge sources
+        knowledge_sources = []
+        if knowledge:
+            if not type or len(knowledge) != len(type):
+                console.print("[yellow]Warning: Each knowledge source needs a corresponding type. Using 'text' as default.[/yellow]")
+                
+            types = type if type and len(knowledge) == len(type) else ["text"] * len(knowledge)
+            
+            for k_path, k_type in zip(knowledge, types):
+                knowledge_sources.append({
+                    "path": k_path,
+                    "type": k_type
+                })
+        
+        if not knowledge_sources:
+            console.print("[red]Error: At least one knowledge source is required.[/red]")
+            raise click.Abort()
+            
+        console.print(f"[bold]Processing query with {len(knowledge_sources)} knowledge sources...[/bold]")
+        for idx, source in enumerate(knowledge_sources):
+            console.print(f"  [cyan]{idx+1}. {source['path']} ({source['type']})[/cyan]")
+            
+        # Execute the query
+        result = agent_knowledge_query(
+            book_path=book_path_str,
+            query=query,
+            knowledge_sources=knowledge_sources,
+            directories=dir,
+            context_limit=context,
+            use_agent=not direct
+        )
+        
+        console.print("\n[bold green]Response:[/bold green]")
+        console.print(result)
+        
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise click.Abort()
 
 
 # Register these commands with the main CLI

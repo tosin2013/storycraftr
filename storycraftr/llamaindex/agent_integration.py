@@ -2,7 +2,7 @@
 Agent integration for LlamaIndex with StoryCraftr.
 """
 import os
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pathlib import Path
 
 from rich.console import Console
@@ -11,7 +11,8 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from storycraftr.llamaindex.core import (
     load_index,
     get_relevant_context,
-    query_index
+    query_index,
+    build_index_with_knowledge
 )
 from storycraftr.agent.agents import create_message, get_thread, create_or_get_assistant
 from storycraftr.state import debug_state
@@ -161,4 +162,68 @@ def add_document_to_agent_context(
         
     except Exception as e:
         console.print(f"[red]Error adding document to agent context: {e}[/red]")
-        return False 
+        return False
+
+
+def agent_knowledge_query(
+    book_path: str,
+    query: str,
+    knowledge_sources: List[Dict],
+    directories: List[str] = None,
+    context_limit: int = 5,
+    use_agent: bool = True
+) -> str:
+    """
+    Query using both book content and knowledge sources through the agent system.
+    
+    This function builds a temporary index combining book content with external
+    knowledge sources, then queries it using the agent enhancement system.
+    
+    Args:
+        book_path (str): Path to the book project.
+        query (str): Query string.
+        knowledge_sources (List[Dict]): List of knowledge source configurations.
+                                       Each dict should contain 'path', 'type',
+                                       and optional 'metadata' keys.
+        directories (List[str], optional): Specific book directories to index.
+        context_limit (int, optional): Number of context items to retrieve. Defaults to 5.
+        use_agent (bool, optional): Whether to use the agent for processing. Defaults to True.
+        
+    Returns:
+        str: Response from the agent or direct query.
+    """
+    try:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[bold blue]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task("[bold blue]Processing knowledge query...", total=None)
+            
+            # Build or load enhanced index with knowledge sources
+            index = build_index_with_knowledge(
+                book_path=book_path,
+                directories=directories,
+                knowledge_sources=knowledge_sources
+            )
+            
+            if not index:
+                progress.stop()
+                return "Error: Could not build knowledge-enhanced index."
+            
+            # Use the enhanced agent query system with the built index
+            progress.update(task, description="[bold blue]Generating knowledge-enhanced response...")
+            
+            response = enhanced_agent_query(
+                book_path=book_path,
+                query=query,
+                context_limit=context_limit,
+                use_agent=use_agent
+            )
+            
+            progress.stop()
+            return response
+            
+    except Exception as e:
+        console.print(f"[red]Error in agent knowledge query: {e}[/red]")
+        return f"Error processing your knowledge query: {e}" 

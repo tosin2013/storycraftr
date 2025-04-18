@@ -75,7 +75,8 @@ def chat(book_path=None):
 
             if user_input.startswith("!"):
                 # Handle custom chat commands first
-                if user_input.startswith("!llamaindex"):
+                command_parts = user_input[1:].split()
+                if command_parts and command_parts[0] in chat_commands:
                     execute_chat_command(user_input[1:], book_path, thread.id)
                     continue
                 # Fall back to CLI command execution
@@ -176,7 +177,13 @@ def execute_chat_command(user_input, book_path, thread_id):
                 cmd_func = chat_commands[module_name][subcommand]
                 
                 if callable(cmd_func):
-                    result = cmd_func(args, book_path=book_path, thread_id=thread_id)
+                    # Initialize chat state if not exists
+                    if not hasattr(execute_chat_command, 'chat_state'):
+                        execute_chat_command.chat_state = {}
+                    
+                    # Pass chat_state as a keyword argument
+                    result = cmd_func(args, book_path=book_path, thread_id=thread_id, 
+                                      chat_state=execute_chat_command.chat_state)
                     
                     if result:
                         # Display the result as markdown

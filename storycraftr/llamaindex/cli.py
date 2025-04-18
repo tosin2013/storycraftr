@@ -17,7 +17,6 @@ from storycraftr.llamaindex.core import (
     load_index,
     query_index,
     get_relevant_context,
-    get_raw_context, 
     load_knowledge_source,
     build_index_with_knowledge
 )
@@ -170,11 +169,11 @@ def build_knowledge_index_command(book_path: str, knowledge: tuple, knowledge_ty
     Examples:
     \b
     # Build an index with a research paper for non-fiction:
-    storycraftr llama build-knowledge-index ./my_book --knowledge ./research/paper.pdf --knowledge-type research
+    storycraftr llamaindex build-knowledge-index ./my_book --knowledge ./research/paper.pdf --knowledge-type research
     
     \b
     # Build an index with worldbuilding and character guides for fiction:
-    storycraftr llama build-knowledge-index ./my_book --knowledge ./lore/world.md --knowledge-type worldbuilding --knowledge ./lore/characters.json --knowledge-type character
+    storycraftr llamaindex build-knowledge-index ./my_book --knowledge ./lore/world.md --knowledge-type worldbuilding --knowledge ./lore/characters.json --knowledge-type character
     """
     try:
         from storycraftr.cli import verify_book_path
@@ -220,7 +219,7 @@ def build_knowledge_index_command(book_path: str, knowledge: tuple, knowledge_ty
         
         if index:
             console.print("[bold green]Enhanced knowledge index built successfully![/bold green]")
-            console.print(f"[green]You can now query your book and knowledge sources using 'storycraftr llama query {book_path} \"your question\"'[/green]")
+            console.print(f"[green]You can now query your book and knowledge sources using 'storycraftr llamaindex query {book_path} \"your question\"'[/green]")
         else:
             console.print("[bold red]Failed to build enhanced knowledge index.[/bold red]")
             

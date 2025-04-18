@@ -131,6 +131,13 @@ def add_document_to_agent_context(
         bool: True if successful, False otherwise.
     """
     try:
+        # Check if index exists
+        index_path = Path(book_path) / "indexes" / "llamaindex"
+        if not index_path.exists():
+            if debug_state.debug:
+                console.print(f"[yellow]No index found at {index_path}. Please build the index first.[/yellow]")
+            return False
+            
         # Get relevant context from the index
         context_list = get_relevant_context(book_path, query, similarity_top_k=context_limit)
         

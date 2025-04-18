@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import json
 from typing import Dict, List, Optional, Union
+from dotenv import load_dotenv
 
 from llama_index.core import Settings, StorageContext
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Document
@@ -21,6 +22,9 @@ from storycraftr.state import debug_state
 from storycraftr.utils.core import load_book_config
 
 console = Console()
+
+# Load environment variables from .env file if present
+load_dotenv()
 
 
 def configure_llama_index(book_path: str, openai_model: Optional[str] = None, openai_url: Optional[str] = None) -> None:
@@ -65,7 +69,7 @@ def get_index_path(book_path: str) -> Path:
         book_path (str): Path to the book project.
         
     Returns:
-        Path: The path to the index directory.
+        Path: The path object pointing to the index directory.
     """
     return Path(book_path) / "indexes" / "llamaindex"
 
@@ -509,5 +513,9 @@ def build_index_with_knowledge(
         
         progress.update(task, completed=True)
         console.print(f"[green]Enhanced knowledge index built successfully with {len(all_documents)} documents![/green]")
+        
+        if index:
+            console.print("[bold green]Enhanced knowledge index built successfully![/bold green]")
+            console.print(f"[green]You can now query your book and knowledge sources using 'storycraftr llamaindex query {book_path} \"your question\"'[/green]")
         
         return index 
